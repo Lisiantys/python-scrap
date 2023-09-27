@@ -1,0 +1,38 @@
+1.Ajouter récupération de lien facebook de son url personalisé / site web
+2.Prendre en compte le bouton next sur page jaune.
+
+3.scapper page facebook / site web
+
+4.Voir avec chatgpt pour améliorer la discretion du scrappage demander des conseils.
+
+X. crée un logiciel qui attends une url page jaune à scrapper en rendanrt l'url dinamique.
+
+Utiliser des attendeurs explicites : Au lieu d'utiliser time.sleep(), qui attend un temps fixe, 
+vous pouvez utiliser des attendeurs explicites de Selenium. Ces attendeurs attendent jusqu'à ce qu'une certaine condition soit remplie 
+(par exemple, qu'un élément soit visible) avant de continuer. Cela peut rendre votre scrappage à la fois plus rapide et plus fiable.
+
+Par exemple, pour attendre qu'un élément soit visible :
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+element = WebDriverWait(driver, 10).until(
+    EC.visibility_of_element_located((By.ID, "myElementId"))
+)
+
+Les CAPTCHAs (Completely Automated Public Turing test to tell Computers and Humans Apart) sont conçus pour empêcher les automates d'accéder à certaines parties d'un site web. Ils sont spécifiquement conçus pour être difficiles à résoudre par les machines, afin de distinguer les activités humaines des activités automatisées.
+
+Valider un CAPTCHA avec du code, en particulier les versions modernes comme Google's reCAPTCHA, est complexe et souvent non fiable. Cependant, voici quelques méthodes que vous pourriez envisager :
+
+Solutions tierces : Il existe des services qui offrent des solutions automatisées pour résoudre les CAPTCHAs, généralement en utilisant une combinaison d'OCR (reconnaissance optique de caractères) et de main-d'œuvre humaine. Ces services ne sont pas gratuits et posent des questions éthiques, car ils peuvent être utilisés pour des activités malveillantes.
+
+API CAPTCHA : Certains sites web offrent une API pour les développeurs qui souhaitent interagir avec leur site de manière automatisée. Si une telle API est disponible, elle pourrait permettre d'éviter le CAPTCHA.
+
+Interventions manuelles : Si le scrappage n'est pas effectué fréquemment, vous pourriez envisager de résoudre manuellement le CAPTCHA lorsque vous lancez le script, puis de laisser le script continuer une fois le CAPTCHA validé.
+
+Éviter les déclencheurs de CAPTCHA : Parfois, en ajustant la fréquence de vos requêtes ou en utilisant des proxies pour varier les adresses IP, vous pouvez éviter d'être détecté comme un bot et donc éviter le CAPTCHA. Cependant, cela dépend de la manière dont le site implémente sa détection de bot.
+
+Utiliser un navigateur en mode tête haute : Au lieu d'utiliser Selenium en mode headless (sans interface graphique), vous pouvez utiliser un navigateur en mode tête haute (avec interface graphique) et observer quand un CAPTCHA apparaît. Vous pouvez alors intervenir manuellement pour le résoudre.
+
+Cependant, il est important de noter que contourner les CAPTCHAs sans autorisation peut violer les conditions d'utilisation du site web et peut être illégal dans certaines juridictions. Toujours respecter les règles et les lois locales, et obtenir l'autorisation avant d'essayer de contourner des mesures de sécurité comme les CAPTCHAs.
