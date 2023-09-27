@@ -14,16 +14,17 @@ def random_sleep(min_seconds=1, max_seconds=20):
 
 # Setup Chrome options for stealth
 chrome_options = Options()
-chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.92 Safari/537.36")
+chrome_options.add_argument("user-agent=Chrome/117.0.5938.92")
 chrome_options.add_argument("--disable-images")
 chrome_options.add_argument("--start-maximized")  # Start browser maximized to look more like a real user
 chrome_options.add_argument("--disable-infobars") # Disable infobars
+chrome_options.add_argument("--incognito")  # Launch browser in incognito mode
 
 # Start the Chrome driver with the modified options
 driver = webdriver.Chrome(options=chrome_options)
 print('Lancement de Chrome')
 
-driver.get('https://www.pagesjaunes.fr/annuaire/chercherlespros?quoiqui=clown&ou=Bretignolles+sur+Mer+%2885470%29&univers=pagesjaunes&idOu=L08503500')
+driver.get('https://www.pagesjaunes.fr/annuaire/chercherlespros?quoiqui=peintre&ou=perigueux-24&univers=pagesjaunes&idOu=')
 random_sleep(2, 5) # Let the user actually see something!
 
 # Function to check if CAPTCHA is present on the page
