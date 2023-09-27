@@ -7,18 +7,17 @@ from selenium.common.exceptions import NoSuchElementException
 
 import pandas as pd
 
-
-
-
 driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
 driver.get('https://www.pagesjaunes.fr/annuaire/chercherlespros?quoiqui=comedien&ou=Bretignolles+sur+Mer+%2885470%29&univers=pagesjaunes&idOu=L08503500')
+time.sleep(3) # Let the user actually see something!
 driver.find_element(By.CLASS_NAME, "didomi-continue-without-agreeing").click()
 time.sleep(5) # Let the user actually see something!
 data = []
 
 professionnels = driver.find_elements(By.CSS_SELECTOR, ".bi-generic")  # Remplacez par le bon sélecteur
 
-for pro in professionnels:
+for i in range(len(professionnels)):
+    pro = driver.find_elements(By.CSS_SELECTOR, ".bi-generic")[i]
     nom = pro.find_element(By.CSS_SELECTOR, ".bi-content h3").text
     adresse = pro.find_element(By.CLASS_NAME, "bi-address").text
     secteur = pro.find_element(By.CLASS_NAME, "bi-activity-unit").text
@@ -47,7 +46,7 @@ for pro in professionnels:
     # Retourner en arrière pour continuer le scraping
     driver.back()
     time.sleep(2)
-    
+
     # Créer un DataFrame à partir des données collectées
     df = pd.DataFrame(data)
 
