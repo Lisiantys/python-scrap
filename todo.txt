@@ -1,3 +1,8 @@
+pip install -r requirements.txt
+
+mirev18310@bookspre.com
+340WN60n-tu
+
 1.Ajouter récupération de lien facebook de son url personalisé / site web
 2.Prendre en compte le bouton next sur page jaune.
 
