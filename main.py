@@ -25,8 +25,9 @@ chrome_options.add_argument("--incognito")  # Launch browser in incognito mode
 driver = webdriver.Chrome(options=chrome_options)
 print('Lancement de Chrome')
 
-driver.get('https://www.artisans-du-batiment.com/trouver-un-artisan-qualifie/?job=ma%C3%A7on&place=Bretignolles-sur-mer+-+85470')
-random_sleep(2, 5) # Let the user actually see something!
+driver.get('https://www.artisans-du-batiment.com/trouver-un-artisan-qualifie/?job=architecte+int%C3%A9rieur&place=85470')
+arrayLength = 24
+random_sleep(1, 2) # Let the user actually see something!
 
 # Function to check if CAPTCHA is present on the page
 def is_captcha_present():
@@ -40,7 +41,7 @@ def is_captcha_present():
 # Check for CAPTCHA and wait for user to solve it manually
 while is_captcha_present():
     print("CAPTCHA detected. Please solve it manually.")
-    random_sleep(1, 5)  # Check every 5 seconds
+    random_sleep(0.5, 2)  # Check every 5 seconds
 
 print("CAPTCHA solved or not present.")
 time.sleep(3)
@@ -49,10 +50,10 @@ print('Récupération des données en cours...')
 data = []
 last_num_posts = 0
 
-while len(data) < 24:  # Continue until we have 24 posts
+while len(data) < arrayLength:  # Continue until we have 24 posts
     
     # Wait for new content to load
-    random_sleep(1, 2)  # Wait for 2-3 seconds
+    random_sleep(0.5, 1)  # Wait for 2-3 seconds
     
     # Get the current posts
     posts = driver.find_elements(By.CSS_SELECTOR, ".a-artisanTease")
@@ -60,8 +61,12 @@ while len(data) < 24:  # Continue until we have 24 posts
     for post in posts[last_num_posts:]:  # Only process new posts
         nom = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__name span").text
         adresse = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address span").text
-        email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__mail a").text
-        
+
+        try:  # IF there is a web site link / facebook link
+            email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__mail a").text
+        except NoSuchElementException:  # If no link was found
+            email = None  # Default value = None = No text in xml file
+
         # Store the data
         data.append({
             "Nom": nom,
@@ -70,9 +75,9 @@ while len(data) < 24:  # Continue until we have 24 posts
         })
 
         # Scroll down a fixed amount
-        driver.execute_script("window.scrollBy(0, 125);")  # Scroll by 500 pixels
+        driver.execute_script("window.scrollBy(0, 150);")  # Scroll by 500 pixels
         
-        random_sleep(1, 2) 
+        random_sleep(0.5, 1) 
         print(f"Processed: {nom}")
     
     # Update the last_num_posts
