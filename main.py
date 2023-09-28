@@ -1,6 +1,7 @@
 import time
 import os
 import random
+import time
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -24,7 +25,7 @@ chrome_options.add_argument("--incognito")  # Launch browser in incognito mode
 driver = webdriver.Chrome(options=chrome_options)
 print('Lancement de Chrome')
 
-driver.get('https://www.artisans-du-batiment.com/')
+driver.get('https://www.artisans-du-batiment.com/trouver-un-artisan-qualifie/?job=ma%C3%A7on&place=Bretignolles-sur-mer+-+85470')
 random_sleep(2, 5) # Let the user actually see something!
 
 # Function to check if CAPTCHA is present on the page
@@ -39,52 +40,44 @@ def is_captcha_present():
 # Check for CAPTCHA and wait for user to solve it manually
 while is_captcha_present():
     print("CAPTCHA detected. Please solve it manually.")
-    random_sleep(15, 20)  # Check every 5 seconds
+    random_sleep(1, 5)  # Check every 5 seconds
 
 print("CAPTCHA solved or not present.")
-
-# Remplir le champ "Métier" (job)
-job_input = driver.find_element(By.NAME, "job")
-job_input.send_keys("maçon")  # Remplacez par le métier souhaité
-random_sleep(1, 4)
-
-# Remplir le champ "Lieu" (place)
-place_input = driver.find_element(By.NAME, "place")
-place_input.send_keys("85340")  # Remplacez par la ville souhaitée
-random_sleep(2, 5)
-# Appuyer sur la touche "Entrée" pour lancer la recherche
-place_input.send_keys(Keys.ENTER)
-random_sleep(3, 5)
-
-data = []
+time.sleep(3)
 print('Récupération des données en cours...')
 
-posts = driver.find_elements(By.CSS_SELECTOR, ".a-artisanTease")
+data = []
+last_num_posts = 0
 
-for post in posts:
-    nom = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__name span").text
-    adresse = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address span").text
-    secteur = job_input
-    email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address a").get_attribute("href")
+while len(data) < 24:  # Continue until we have 24 posts
+    
+    # Wait for new content to load
+    random_sleep(1, 2)  # Wait for 2-3 seconds
+    
+    # Get the current posts
+    posts = driver.find_elements(By.CSS_SELECTOR, ".a-artisanTease")
+    
+    for post in posts[last_num_posts:]:  # Only process new posts
+        nom = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__name span").text
+        adresse = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address span").text
+        email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__mail a").text
+        
+        # Store the data
+        data.append({
+            "Nom": nom,
+            "Adresse": adresse,
+            "email" : email
+        })
 
-    random_sleep(2, 4)
+        # Scroll down a fixed amount
+        driver.execute_script("window.scrollBy(0, 125);")  # Scroll by 500 pixels
+        
+        random_sleep(1, 2) 
+        print(f"Processed: {nom}")
+    
+    # Update the last_num_posts
+    last_num_posts = len(posts)
 
-    # try:  # IF there is a web site link / facebook link
-    #     lien_site = driver.find_element(By.CSS_SELECTOR, ".lvs-container a .value").text
-    #     if lien_site and not lien_site.startswith("www."):
-    #         lien_site = "www." + lien_site
-    # except NoSuchElementException:  # If no link was found
-    #     lien_site = None  # Default value = None = No text in xml file
-
-    # Store the data
-    data.append({
-        "Secteur": secteur,
-        "Nom": nom,
-        "Adresse": adresse,
-        "email" : email
-    })
-
-    random_sleep(1, 4)
 
 # Check if the Excel file already exists
 if os.path.exists("donnees_professionnels.xlsx"):
