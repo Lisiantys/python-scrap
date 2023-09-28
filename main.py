@@ -24,7 +24,7 @@ chrome_options.add_argument("--incognito")  # Launch browser in incognito mode
 driver = webdriver.Chrome(options=chrome_options)
 print('Lancement de Chrome')
 
-driver.get('https://www.pagesjaunes.fr/annuaire/chercherlespros?quoiqui=peintre&ou=perigueux-24&univers=pagesjaunes&idOu=')
+driver.get('https://www.artisans-du-batiment.com/')
 random_sleep(2, 5) # Let the user actually see something!
 
 # Function to check if CAPTCHA is present on the page
@@ -42,44 +42,48 @@ while is_captcha_present():
     random_sleep(15, 20)  # Check every 5 seconds
 
 print("CAPTCHA solved or not present.")
-driver.find_element(By.CLASS_NAME, "didomi-continue-without-agreeing").click()
+
+# Remplir le champ "Métier" (job)
+job_input = driver.find_element(By.NAME, "job")
+job_input.send_keys("maçon")  # Remplacez par le métier souhaité
+random_sleep(1, 4)
+
+# Remplir le champ "Lieu" (place)
+place_input = driver.find_element(By.NAME, "place")
+place_input.send_keys("85340")  # Remplacez par la ville souhaitée
 random_sleep(2, 5)
+# Appuyer sur la touche "Entrée" pour lancer la recherche
+place_input.send_keys(Keys.ENTER)
+random_sleep(3, 5)
 
 data = []
 print('Récupération des données en cours...')
 
-posts = driver.find_elements(By.CSS_SELECTOR, ".bi-generic")
+posts = driver.find_elements(By.CSS_SELECTOR, ".a-artisanTease")
 
 for post in posts:
-    nom = post.find_element(By.CSS_SELECTOR, ".bi-content h3").text
-    adresse = post.find_element(By.CLASS_NAME, "bi-address").text
-    secteur = post.find_element(By.CLASS_NAME, "bi-activity-unit").text
+    nom = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__name span").text
+    adresse = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address span").text
+    secteur = job_input
+    email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address a").get_attribute("href")
 
-    # Acces to the dedicate page
-    lien_page_dediee = post.find_element(By.CLASS_NAME, "bi-denomination").get_attribute("href")
-    post.find_element(By.CLASS_NAME, "bi-denomination").click()
     random_sleep(2, 4)
 
-
-    try:  # IF there is a web site link / facebook link
-        lien_site = driver.find_element(By.CSS_SELECTOR, ".lvs-container a .value").text
-        if lien_site and not lien_site.startswith("www."):
-            lien_site = "www." + lien_site
-    except NoSuchElementException:  # If no link was found
-        lien_site = None  # Default value = None = No text in xml file
-
+    # try:  # IF there is a web site link / facebook link
+    #     lien_site = driver.find_element(By.CSS_SELECTOR, ".lvs-container a .value").text
+    #     if lien_site and not lien_site.startswith("www."):
+    #         lien_site = "www." + lien_site
+    # except NoSuchElementException:  # If no link was found
+    #     lien_site = None  # Default value = None = No text in xml file
 
     # Store the data
     data.append({
         "Secteur": secteur,
         "Nom": nom,
         "Adresse": adresse,
-        "Lien Page dédiée": lien_page_dediee,
-        "Site Web": lien_site
+        "email" : email
     })
 
-    # Back to the previous page with list of posts
-    driver.back()
     random_sleep(1, 4)
 
 # Check if the Excel file already exists
