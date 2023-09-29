@@ -13,62 +13,64 @@ from utilities import random_sleep, start, error
 print('Lancement de Chrome')
 
 # lance le navigateur à la page dédiée
-driver = start()
-driver.get('https://www.annuairehotels.fr/hotel/?c=&departement=vendee')
-error(driver)
-time.sleep(3)
 
-print('Récupération des données en cours...')
+BASE_URL = "https://www.annuairehotels.fr/hotel/page/{page_num}/?c&departement=vendee"
 data = []
 
-random_sleep(0.5, 1) 
+for page_num in range(11):  # Cela parcourra les numéros de 0 à 10
+    current_url = BASE_URL.format(page_num=page_num)
+    driver = start()
+    driver.get(current_url)
+    error(driver)  # Votre fonction pour gérer les erreurs
+    time.sleep(3)
 
-posts = driver.find_elements(By.CSS_SELECTOR, ".entreprises-card")
+    posts = driver.find_elements(By.CSS_SELECTOR, ".entreprises-card")
 
-for post in posts: 
-    nom = post.find_element(By.CSS_SELECTOR, ".entreprises-card-title").text
-    url = post.get_attribute('href')
-    random_sleep(0.5, 1)
-    driver.get(url)
+    print('Récupération des données en cours...')
 
-    try:  
-        # Localiser l'élément contenant l'e-mail
-        email_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-envelope']]")
+    for post in posts: 
+        nom = post.find_element(By.CSS_SELECTOR, ".entreprises-card-title").text
+        url = post.get_attribute('href')
+        random_sleep(0.5, 1)
+        driver.get(url)
 
-        # Extraire le texte de l'élément
-        email_text = email_element.text
+        try:  
+            # Localiser l'élément contenant l'e-mail
+            email_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-envelope']]")
 
-        # Séparer le texte pour obtenir l'adresse e-mail
-        email = email_text.split(': ')[1]
+            # Extraire le texte de l'élément
+            email_text = email_element.text
 
-        print(email)  # Cela devrait afficher "reservations@hotel-omnubo.com"
+            # Séparer le texte pour obtenir l'adresse e-mail
+            email = email_text.split(': ')[1]
 
-    except NoSuchElementException: 
-        email = None  
+            print(email)  # Cela devrait afficher "reservations@hotel-omnubo.com"
 
-    try:  
-        # Localiser l'élément contenant l'e-mail
-        adress_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-map-marked']]")
+        except NoSuchElementException: 
+            email = None  
 
-        # Extraire le texte de l'élément
-        adress = adress_element.text
+        try:  
+            # Localiser l'élément contenant l'e-mail
+            adress_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-map-marked']]")
 
-        print(adress)  # Cela devrait afficher "reservations@hotel-omnubo.com"
+            # Extraire le texte de l'élément
+            adress = adress_element.text
 
-    except NoSuchElementException: 
-        adress = None  
+            print(adress)  # Cela devrait afficher "reservations@hotel-omnubo.com"
 
-    data.append({
-        "Nom": nom,
-        "Adress": adress,
-        "email" : email,
-        "url": url
-    })
+        except NoSuchElementException: 
+            adress = None  
+
+        data.append({
+            "Nom": nom,
+            "Adress": adress,
+            "email" : email,
+            "url": url
+        })
     
-    random_sleep(0.5, 1) 
-    print(f"Processed: {nom}")
-
-    driver.back()
+        random_sleep(0.5, 1) 
+        print(f"Processed: {nom}")
+        driver.back()
 
    
 # Check if the Excel file already exists
