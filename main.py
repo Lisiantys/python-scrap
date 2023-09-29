@@ -1,89 +1,76 @@
 import time
 import os
-import random
 import time
+from selenium.webdriver.chrome.options import Options
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
 
-# Function to introduce a random sleep to mimic human behavior
-def random_sleep(min_seconds=1, max_seconds=20):
-    time.sleep(random.uniform(min_seconds, max_seconds))
+from utilities import random_sleep, start, error
 
-# Setup Chrome options for stealth
-chrome_options = Options()
-chrome_options.add_argument("user-agent=Chrome/117.0.5938.92")
-chrome_options.add_argument("--disable-images")
-chrome_options.add_argument("--start-maximized")  # Start browser maximized to look more like a real user
-chrome_options.add_argument("--disable-infobars") # Disable infobars
-chrome_options.add_argument("--incognito")  # Launch browser in incognito mode
-
-# Start the Chrome driver with the modified options
-driver = webdriver.Chrome(options=chrome_options)
 print('Lancement de Chrome')
 
-driver.get('https://www.artisans-du-batiment.com/trouver-un-artisan-qualifie/?job=architecte+int%C3%A9rieur&place=85470')
-arrayLength = 24
-random_sleep(1, 2) # Let the user actually see something!
-
-# Function to check if CAPTCHA is present on the page
-def is_captcha_present():
-    try:
-        # This is just an example, you'd need to find the actual CAPTCHA element's selector
-        driver.find_element(By.ID, "challenge-running")
-        return True
-    except NoSuchElementException:
-        return False
-
-# Check for CAPTCHA and wait for user to solve it manually
-while is_captcha_present():
-    print("CAPTCHA detected. Please solve it manually.")
-    random_sleep(0.5, 2)  # Check every 5 seconds
-
-print("CAPTCHA solved or not present.")
+# lance le navigateur à la page dédiée
+driver = start()
+driver.get('https://www.annuairehotels.fr/hotel/?c=&departement=vendee')
+error(driver)
 time.sleep(3)
+
 print('Récupération des données en cours...')
-
 data = []
-last_num_posts = 0
 
-while len(data) < arrayLength:  # Continue until we have 24 posts
+random_sleep(0.5, 1) 
+
+posts = driver.find_elements(By.CSS_SELECTOR, ".entreprises-card")
+
+for post in posts: 
+    nom = post.find_element(By.CSS_SELECTOR, ".entreprises-card-title").text
+    url = post.get_attribute('href')
+    random_sleep(0.5, 1)
+    driver.get(url)
+
+    try:  
+        # Localiser l'élément contenant l'e-mail
+        email_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-envelope']]")
+
+        # Extraire le texte de l'élément
+        email_text = email_element.text
+
+        # Séparer le texte pour obtenir l'adresse e-mail
+        email = email_text.split(': ')[1]
+
+        print(email)  # Cela devrait afficher "reservations@hotel-omnubo.com"
+
+    except NoSuchElementException: 
+        email = None  
+
+    try:  
+        # Localiser l'élément contenant l'e-mail
+        adress_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-map-marked']]")
+
+        # Extraire le texte de l'élément
+        adress = adress_element.text
+
+        print(adress)  # Cela devrait afficher "reservations@hotel-omnubo.com"
+
+    except NoSuchElementException: 
+        adress = None  
+
+    data.append({
+        "Nom": nom,
+        "Adress": adress,
+        "email" : email,
+        "url": url
+    })
     
-    # Wait for new content to load
-    random_sleep(0.5, 1)  # Wait for 2-3 seconds
-    
-    # Get the current posts
-    posts = driver.find_elements(By.CSS_SELECTOR, ".a-artisanTease")
-    
-    for post in posts[last_num_posts:]:  # Only process new posts
-        nom = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__name span").text
-        adresse = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__address span").text
+    random_sleep(0.5, 1) 
+    print(f"Processed: {nom}")
 
-        try:  # IF there is a web site link / facebook link
-            email = post.find_element(By.CSS_SELECTOR, ".a-artisanTease__mail a").text
-        except NoSuchElementException:  # If no link was found
-            email = None  # Default value = None = No text in xml file
+    driver.back()
 
-        # Store the data
-        data.append({
-            "Nom": nom,
-            "Adresse": adresse,
-            "email" : email
-        })
-
-        # Scroll down a fixed amount
-        driver.execute_script("window.scrollBy(0, 150);")  # Scroll by 500 pixels
-        
-        random_sleep(0.5, 1) 
-        print(f"Processed: {nom}")
-    
-    # Update the last_num_posts
-    last_num_posts = len(posts)
-
-
+   
 # Check if the Excel file already exists
 if os.path.exists("donnees_professionnels.xlsx"):
     # Load existing data
