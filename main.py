@@ -1,12 +1,8 @@
 import time
 import os
-import time
-from selenium.webdriver.chrome.options import Options
 import pandas as pd
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.support import expected_conditions as EC
 
 from utilities import random_sleep, start, error
 
