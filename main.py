@@ -1,10 +1,9 @@
-import time
 import os
 import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
-from utilities import random_sleep, start, error
+from utilities import random_sleep, start, smooth_scroll, close_popup, one_scroll_on_page
 
 print('Lancement de Chrome')
 
@@ -13,8 +12,8 @@ print('Lancement de Chrome')
 data = []
 
 driver = start()
-driver.get("https://www.paruvendu.fr/immobilier/location/appartement/")
-random_sleep(3, 4)
+driver.get("https://www.paruvendu.fr/immobilier/annonceimmofo/liste/listeAnnonces?tt=5&tbApp=1&tbDup=1&tbChb=1&tbLof=1&tbAtl=1&tbPla=1&at=1&pa=FR&lol=15&ddlFiltres=nofilter&codeINSEE=,33126,")
+random_sleep(2, 3)
 link_element = driver.find_element(By.XPATH, "//a[@onclick='cmp_pv.ui.showVendors()']")
 link_element.click()
 random_sleep(1, 2)
@@ -22,50 +21,65 @@ button = driver.find_element(By.XPATH, "//button[@onclick='cmp_pv.ui.switchAllPu
 button.click()
 random_sleep(2, 3)
 
-posts = driver.find_elements(By.CSS_SELECTOR, ".border-1.border-grey-75.shadow-xl.hover\\:shadow-2xl.bg-white.relative.p-4.sm\\:p-2.my-6")
+posts = driver.find_elements(By.CSS_SELECTOR, ".border-1.border-grey-75.shadow-xl.hover\\:shadow-2xl.bg-white.relative.p-4.sm\\:p-2")
 
 print('Récupération des données en cours...')
 
+initial_step = 150
+step_increment = 150
+
 for post in posts: 
-    random_sleep(2, 4)
-    # Supposons que `parent_element` est l'élément parent que vous avez déjà localisé
-    prix_div = post.find_element(By.CSS_SELECTOR, "div.flex.justify-center.items-center > div")
-    prix = prix_div.text.split()[0]  # Cela devrait vous donner "750 €"
-    print(prix)
 
-    # url = post.get_attribute('href')
+    url = post.find_element(By.CSS_SELECTOR, ".flex.sm\\:block.gap-4 a").get_attribute('href')
     random_sleep(0.5, 1)
-    # driver.get(url)
+    driver.get(url)
+    random_sleep(1, 2)
+    close_popup(driver)
+    random_sleep(1, 2)
+    one_scroll_on_page(driver)
+   
+    try:  
+        prix_element = driver.find_element(By.CSS_SELECTOR, "#autoprix")
+        prix = prix_element.text.split("\n")[0]
+    except NoSuchElementException: 
+        prix = None  
 
-    # try:  
-    #     # Localiser l'élément contenant l'e-mail
-    #     email_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-envelope']]")
+    try:  
+        titre = driver.find_element(By.CSS_SELECTOR, "#detail_h1").text
+    except NoSuchElementException: 
+        titre = None  
+    
+    try:  
+        lieu = driver.find_element(By.CSS_SELECTOR, "#detail_loc").text
+    except NoSuchElementException: 
+        lieu = None  
+    
+    try:  
+        sous_titre = driver.find_element(By.CSS_SELECTOR, ".autodetail-titre.sepdetail14-ssbordure").text
+    except NoSuchElementException: 
+        sous_titre = None  
 
-    #     # Extraire le texte de l'élément
-    #     email_text = email_element.text
+    try:  
+        description = driver.find_element(By.CSS_SELECTOR, "#txtAnnonceTrunc").text
+    except NoSuchElementException: 
+        description = None  
 
-    #     # Séparer le texte pour obtenir l'adresse e-mail
-    #     email = email_text.split(': ')[1]
+    random_sleep(1, 2)
 
-    #     print(email)  # Cela devrait afficher "reservations@hotel-omnubo.com"
+    driver.back()
+    random_sleep(2, 3)
+    smooth_scroll(driver, step=initial_step)
 
-    # except NoSuchElementException: 
-    #     email = None  
-
-    # try:  
-    #     # Localiser l'élément contenant l'e-mail
-    #     adress_element = driver.find_element(By.XPATH, "//div[@class='col'][.//i[@class='fa fa-map-marked']]")
-
-    #     # Extraire le texte de l'élément
-    #     adress = adress_element.text
-
-    #     print(adress)  # Cela devrait afficher "reservations@hotel-omnubo.com"
-
-    # except NoSuchElementException: 
-    #     adress = None  
+    # Incrémentez le step pour la prochaine itération de la boucle principale
+    initial_step += step_increment
 
     data.append({
+        "url": url,
         "prix": prix,
+        "titre": titre,
+        "sous-titre": sous_titre,
+        "lieu": lieu,
+        "description": description
     })
 
     random_sleep(0.5, 1) 
